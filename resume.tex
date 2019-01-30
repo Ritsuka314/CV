@@ -57,7 +57,6 @@
 \renewcommand{\headrulewidth}{0pt}}
 \pagestyle{plain}
 
-
 \usepackage{hyperref}
 \hypersetup{
 	breaklinks=true,
@@ -76,6 +75,8 @@
 \newcommand{\fullhrulefill}{%
   \hspace*{-\sectionwidth}\hrulefill%
   }
+  
+\usepackage{tikz}
 
 % Increase text height
 \textheight=700pt
@@ -93,7 +94,8 @@
 % -linked-in profile
 
 \address{
-Email : \href{mailto:richardyan314@foxmail.com}{richardyan314@foxmail.com}
+Email : \tikz[baseline]{\node[anchor=base] {richardyan314@foxmail.com};}
+%\href{mailto:richardyan314@foxmail.com}{richardyan314@foxmail.com}
 \\LinkedIn : \url{https://www.linkedin.com/in/yunshan-richard-yan-58a2a617a}/
 \\Github : \url{https://github.com/RichardYan314}
 \\Blog : \url{https://richardyan314.github.io/}
