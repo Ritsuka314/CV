@@ -43,17 +43,21 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\let\nofiles\relax % allow .aux file for the lastpage package
 \documentclass[margin]{res}  
 
 % Default font is the helvetica postscript font
-\usepackage{helvet}
+% \usepackage{helvet}
+\usepackage{charter}
 
+\usepackage{lastpage}
 \usepackage{fancyhdr}
 \usepackage[us,12hr]{datetime} % `us' makes \today behave as usual in TeX/LaTeX
 \fancypagestyle{plain}{
 \fancyhf{}
-\rfoot{Compiled on {\ddmmyyyydate\today} at \currenttime~EST}
-\lfoot{Page \thepage}
+%\rfoot{Compiled on {\ddmmyyyydate\today} at \currenttime~EST}
+%\lfoot{Page \thepage}
+\fancyfoot[R]{page \thepage{} of \pageref*{LastPage}; updated \today}
 \renewcommand{\headrulewidth}{0pt}}
 \pagestyle{plain}
 
@@ -75,18 +79,84 @@
 \newcommand{\fullhrulefill}{%
   \hspace*{-\sectionwidth}\hrulefill%
   }
-  
-\usepackage{tikz}
+
+
+%% provide \email macro
+%% https://tex.stackexchange.com/a/128515
+%% l3regex is now part of expl3
+\usepackage{color,xparse,expl3}
+
+\ExplSyntaxOn
+\NewDocumentCommand{\email}{m}{
+  \svend_email:n { #1 }
+}
+\tl_new:N \l_svend_email_tl
+\seq_new:N \l_svend_email_seq
+\cs_generate_variant:Nn \seq_set_split:Nnn { NnV }
+\cs_new_protected:Npn \svend_email:n #1
+  {
+  \tl_set:Nn \l_svend_email_tl { #1 }
+  \regex_replace_all:nnN { \cD. } { \c{textunderscore} } \l_svend_email_tl
+  \seq_set_split:NnV \l_svend_email_seq { @ } \l_svend_email_tl
+  \href{ mailto:#1 }{ \emailfont \seq_use:Nn \l_svend_email_seq { \emailat } }
+  }
+\ExplSyntaxOff
+\newcommand\emailfont{\sffamily}
+\newcommand\emailat{{\color{red}\small @}}
+
+
+%% print compile time in current timezome
+%% https://tex.stackexchange.com/a/167817
+\usepackage{etoolbox}
+
+\def\parsepdfdatetime#1:#2#3#4#5#6#7#8#9{%
+  \def\theyear{#2#3#4#5}%
+  \def\themonth{#6#7}%
+  \def\theday{#8#9}%
+  \parsepdftime
+}
+
+\def\parsepdftime#1#2#3#4#5#6#7\endparsepdfdatetime{%
+  \def\thehour{#1#2}%
+  \def\theminute{#3#4}%
+  \def\thesecond{#5#6}%
+  \ifstrequal{#7}{Z}
+  {%
+    \def\thetimezonehour{+00}%
+    \def\thetimezoneminute{00}%
+  }%
+  {%
+    \parsepdftimezone#7%
+  }%
+}
+
+\def\parsepdftimezone#1'#2'{%
+  \def\thetimezonehour{#1}%
+  \def\thetimezoneminute{#2}%
+}
+
+\newcommand*{\thetimezone}{\thetimezonehour:\thetimezoneminute}
+
+\expandafter\parsepdfdatetime\pdfcreationdate\endparsepdfdatetime
+
+\usepackage{listings}
+\lstset{
+basicstyle=\small\ttfamily,
+columns=flexible,
+breaklines=true
+}
+
+\usepackage{uri}
 
 % Increase text height
-\textheight=700pt
+% \textheight=700pt
 
 \begin{document}
 
 %-------------------------------------------------------------------------------
 %	NAME AND ADDRESS SECTION
 %-------------------------------------------------------------------------------
-\name{Yunshan (Richard) Yan}
+\name{\sf Kagurazaka Ritsuka}
 
 % Note that addresses can be used for other contact information:
 % -phone numbers
@@ -94,12 +164,11 @@
 % -linked-in profile
 
 \address{
-Email : \tikz[baseline]{\node[anchor=base] {richardyan314@foxmail.com};}
-%\href{mailto:richardyan314@foxmail.com}{richardyan314@foxmail.com}
-\\LinkedIn : \url{https://www.linkedin.com/in/yunshan-richard-yan-58a2a617a}/
-\\Github : \url{https://github.com/RichardYan314}
-\\Blog : \url{https://richardyan314.github.io/}
-\\
+\begin{tabular}{l l}
+    Email         &: \email{Ritsuka314@queensu.ca}
+  \\Personal Page &: \url{https://ritsuka.moe/}
+  \\LinkedIn      &: \url{https://www.linkedin.com/in/kagurazaka-ritsuka-58a2a617a/}
+\end{tabular}
 }
 
 % Uncomment to add more addresses
@@ -109,167 +178,162 @@ Email : \tikz[baseline]{\node[anchor=base] {richardyan314@foxmail.com};}
 \begin{resume}
 
 %-------------------------------------------------------------------------------
-%	EDUCATION SECTION
-%-------------------------------------------------------------------------------
 
 \fullhrulefill
 
 \section{}
 This file was compiled at 
-{\shortdate\today} at \currenttime~EST.
+\theyear-\themonth-\theday\ \thehour:\theminute:\thesecond\ \thetimezone.
 Most up-to-date version can be accessed at: \\
-\url{https://github.com/RichardYan314/Resume/blob/master/resume.pdf}
+\url{https://github.com/Ritsuka314/Resume/blob/master/resume.pdf}
+
+% \section{}
+% A `.docx` formatted version generated from this file can be accessed at: \\
+% \url{https://github.com/RichardYan314/Resume/blob/master/resume.docx} \\
+% which may not be up to date.
 
 \section{}
-A `.docx` formatted version generated from this file can be accessed at: \\
-\url{https://github.com/RichardYan314/Resume/blob/master/resume.docx} \\
-which may not be up to date.
-
-\section{}
-My unofficial transcript for both MASc and BASc degrees can be accessed at:\\
-\url{https://github.com/RichardYan314/Resume/blob/master/transcript_unofficial.pdf}
+My unofficial transcript for PhD, MASc, and BASc degrees can be accessed at:\\
+\url{https://github.com/Ritsuka314/Resume/blob/master/SSR_TSRPT_UN.pdf} and
+\url{https://github.com/Ritsuka314/Resume/blob/master/McMaster%20Transfer%20Credit.pdf}.
 
 % \section{OBJECTIVE}
 % {\sl Pre-Final year B. Tech student at LNMIIT. Inquisitive, hard-working and consistent. Looking for internship opportunities at Microsoft where I can apply my skills and contribute to real-world projects }
 
-\section{EDUCATION}
+% \section{}
+% This file is an informal draft.
+
+% For limited circulation only.
+
+%-------------------------------------------------------------------------------
+
+\section{Research\\interests}
+Discrete-event Systems: supervisory control, decentralization;
+formal reasoning; computer assisted and verified proofs
+
+\section{Teaching experience}
+Data Structures;
+Computer Architecture;
+Microprocessor Interfacing and Embedded Systems;
+Discrete Mathematics;
+Semantics of Programming Language;
+Electric Circuits.
+
+\section{Teaching\\awards}
+2021 Dean's Teaching Assistant Award (DTA), as exceptional Teaching Assistant nominated by the department.
+
+Teaching Assistant of the Year for Excellence in Education and Exceptional Teaching, as voted by students of the department, for the academic year of 2016/2017.
+
+
+\section{Education}
+\textbf{Queen's University}, Canada\\
+{\sl Doctor of Philosophy, Department of Electrical and Computer Engineering\\
+Expected 2023}
+
 \textbf{Queen's University}, Canada\\
 {\sl Master of Engineering, Department of Electrical and Computer Engineering\\
-Expected May 2018}
+Awarded:
+\hfill 2019 June\\
+GPA:
+\hfill 4.02/4.3}
 
 \textbf{Queen's University}, Canada\\
 {\sl Bachelor of Applied Science, Department of Electrical and Computer Engineering\\
+Awarded:
+\hfill 2018 June\\
+Honours:
+\hfill First Class Honours\\
 GPA: 
-\hfill CGPA: 3.85/4.2}
-
-
+\hfill CGPA: 3.85/4.3}
 
 %-------------------------------------------------------------------------------
-%	COMPUTER SKILLS SECTION
+
+\section{Publications}
+
+See also \url{https://ritsuka.moe/bibpage.html}.
+
+
+{\bf K.~Ritsuka}, K.~Rudie\\
+``A Uniform Treatment of Architectures in Decentralized Discrete-Event System'',
+2023\\
+Submitted for Publication. Preprint available as \arxiv{2210.16511}.
+
+{\bf K.~Ritsuka}, K.~Rudie\\
+``A correspondence between control and observation problems in decentralized discrete-event systems'',
+2022\\
+Preprint available as \arxiv{2204.10792}.
+
+N.~Mertin, {\bf K.~Ritsuka}, K.~Rudie\\
+``A Framework for the High-Level Specification and Verification of Synchronous Digital Logic Systems'',
+2022\\
+Preprint available as \arxiv{2201.10632}.
+
+{\bf K.~Ritsuka}, K.~Rudie\\
+``A Visualization of Inference-Based Supervisory Control in Discrete-Event Systems'',
+2021\\
+Presented at \emph{2021 60th IEEE Conference on Decision and Control (CDC)}.
+\doi{10.1109/CDC45484.2021.9683210}.
+
+{\bf K.~Ritsuka}, K.~Rudie\\
+``Do What You Know: Coupling Knowledge with Action in Discrete-Event Systems'',\\
+Submitted for Publication. Preprint available as \arxiv{2108.02000}.
+
+{\bf K.~Ritsuka}, K.~Rudie\\
+``Epistemic Interpretations of Decentralized Discrete-Event System Problems'',
+2022\\
+In \emph{Discrete Event Dynamic Systems}.
+\doi{10.1007/s10626-022-00363-7}.
+
+J.~Kulchyk, B.~Schonewille, {\bf K.~Ritsuka}, K.~Rudie\\
+``Communication-Free Multi-Agent Coordination in an Unknown Environment'',
+2020,\\
+Presented at \emph{2020 15th IFAC Workshop on Discrete Event Systems (WODES)}.
+\doi{10.1016/j.ifacol.2021.04.062}
+
 %-------------------------------------------------------------------------------
-\section{TECHNICAL\\SKILLS}
 
-\textbf{Programming Languages : } Python, Java ,JavaScript, C,  C++, Haskell, Coq, Scheme, TXL
-\\
-\textbf{Database :} MySQL
-\\
-\textbf{General : } Embedded Systems, Data Mining, Algorithms.
+\section{Teaching}
+
+\textbf{Graduate Teaching Assistant}
+
+\begin{lstlisting}
+    CISC 465/865-2023W: Semantics of Programming Languages (ongoing)
+    ELEC 274-2023W: Computer Architecture (ongoing)
+    ELEC 371-2022F: Microprocessor Interfacing and Embedded Systems
+*   ELEC 270-2022W: Discrete Mathematics
+**  ELEC 270-2021W: Discrete Mathematics
+    ELEC 371-2020F: Microprocessor Interfacing and Embedded Systems
+    ELEC 270-2020W: Discrete Mathematics
+    ELEC 278-2019F: Data Structures
+    ELEC 278-2018F: Data Structures
+
+*   Head TA
+**  Recipient of the 2021 Dean's Teaching Assistant Award (DTA), as exceptional Teaching Assistant nominated by the department. With a monetary award.
+\end{lstlisting}
+
+\textbf{Undergraduate Teaching Assistant}
+
+\begin{lstlisting}
+    ELEC 274-2018W: Computer Architecture
+    ELEC 278-2017F: Data Structures
+*   ELEC 274-2017W: Computer Architecture
+    ELEC 221-2016F: Electric Circuits
+
+*   Awarded as Teaching Assistant of the Year for Excellence in Education and Exceptional Teaching, as voted by students of the department, for the academic year of 2016/2017.
+\end{lstlisting}
 
 %-------------------------------------------------------------------------------
-% Modify the format of each position
-\begin{format}
-\title{l}\\
-\dates{l}\location{r}\\
-\body\\
-\end{format}
-%-------------------------------------------------------------------------------
-
-\section{EXPERIENCE}
-
-\textbf{Queen's University : Research Assistance \hfill{Sept. 18 - Dec. 18}\\}
-\normalfont{Research Assistance in Software Reengineering Research Group.\\
-url: http://post.queensu.ca/~zouy/ (The server does not have HTTPS capability)}
-
-\textbf{Queen's University : Graduate Teaching Assistance \hfill{Sept. 18 - Dec. 18}\\}
-\normalfont{Graduate TA for course ELEC 278: Data Structures. Duties involved supervising lab activities, proctoring quizzes, marking final exams, and answer student questions.}
-
-\textbf{Queen's University : Undergraduate Teaching Assistance \hfill{Jan. 18 - Apr. 18}\\}
-\normalfont{Undergraduate TA for course ELEC 274: Computer Architecture. Duties involved supervising lab activities and answer student questions.}
-
-\textbf{Queen's University : Undergraduate Teaching Assistance \hfill{Sept. 17 - Dec. 17}\\}
-\normalfont{Undergraduate TA for course ELEC 278: Data Structures. Duties involved supervising lab activities and answer student questions.}
-
-\textbf{Queen's University : Undergraduate Teaching Assistance \hfill{Jan. 17 - Apr. 17}\\}
-\normalfont{Undergraduate TA for course ELEC 274: Computer Architecture. Duties involved supervising lab activities and answer student questions.}
-
-\textbf{Queen's University : Undergraduate Teaching Assistance \hfill{Sept. 16 - Dec. 16}\\}
-\normalfont{Undergraduate TA for course ELEC 221: Electric Circuits. Duties involved supervising lab activities, preparing assignment solutions, and answer student questions.}
-
-\section{PROJECTS}
-\textbf{Networking Support for Terasic DE10 Board\hfill Sept. 2017 - Apr. 2018}
-
-%\begin{position}
-% \begin{itemize}
-Networking capability was added to the Terasic DE10 board, a embedded system build around the Intel System-on-Chip(SoC) FPGA, by interfacing it to a WIZ812MJ, a commercially available network module, through both SPI and parallel bus communication interface.
-This project is awarded as the Students' Choice: The Best Engineering Capstone Project.
-% \end{itemize}
-\begin{itemize}
-\item \textbf{Technology/Tools:} FPGA, C, Nios II assembly, Altera Quartus II, TCP/IP stack.
-\end{itemize}
-%\end{position}
-
-\textbf{FPGA Implementation of the MiniSRC processor\hfill Jan. - Apr. 2017}
-
-%\begin{position}
-% \begin{itemize}
-The RISC style MiniSRC processor was implemented on Altera FPGA using VHDL language. In addition, an assembler was built to convert MiniSRC assembly language to Altera FPGA Memory Initialization File (.mif).
-% \end{itemize}
-\begin{itemize}
-\item \textbf{Technology/Tools:} VHDL, FPGA, Altera Quartus II.
-\end{itemize}
-%\end{position}
-
-\textbf{Compiler for Programming Language Garnet \hfill Sep - Dec 2016}
-
-%\begin{position}
-% \begin{itemize}
-A compiler was developed for the programming language Garnet: a Ruby/Pascal like language. All four phases of the compiler (i.e., lexing, parsing, semantic analyzing, and code generating) are implemented in the S/SL language (Syntax/Semantic Language) (Holt, Richard C., James R. Cordy, and David B. Wortman. "An introduction to S/SL: Syntax/semantic language." ACM Transactions on Programming Languages and Systems (TOPLAS) 4.2 (1982): 149-178.)
-% \end{itemize}
-\begin{itemize}
-\item \textbf{Technology/Tools:} S/SL, Linux Intel x86 assembly, Theories of Formal Languages and Automata.
-\end{itemize}
-%\end{position}
-
-
-\section{CERTIFICATION}
-\par
-\normalfont{.}
-\\
-\normalfont{\textbullet{} \textbf{Machine Learning} by University of Stanford on \sl{Coursera}} \\
-Verify : \url{https://www.coursera.org/account/accomplishments/certificate/QCXVU9KDVW59}
-\\
-
-
-\section{RELEVANT\\COURSES}
-\par
-
-\normalfont{\textbullet{} Digital Systems }
-\normalfont{ \textbullet{} Data Structures}
-\normalfont{ \textbullet{} Computer Architecture \\}
-\normalfont{\textbullet{} Mechatronics Project   }
-\normalfont{\textbullet{} Fundamentals of Software Development\\}
-\normalfont{\textbullet{} Algorithms }
-\normalfont{ \textbullet{} Probability \& Random Processes \\}
-\normalfont{\textbullet{} Microprocessor Systems}
-\normalfont{\textbullet{} Operating Systems}
-\normalfont{\textbullet{} Software Specifications\\}
-\normalfont{\textbullet{} Database Management Systems}
-\normalfont{\textbullet{} Computer Graphics\\}
-\normalfont{\textbullet{} Programming Language Processor}
-\normalfont{\textbullet{} Digital Systems Engineering\\}
-\normalfont{\textbullet{} Computer System Architecture}
-\normalfont{\textbullet{} Computability \& Complexity\\}
-\normalfont{\textbullet{} Formal Methods In Software Engineering}
-\normalfont{\textbullet{} Image Processing \& Computer Vision\\}
-\normalfont{\textbullet{} Number Theory \& Cryptography}
-\normalfont{\textbullet{} Computer Networks\\}
-\normalfont{\textbullet{} Control Of Discrete-Event Systems}
-\normalfont{\textbullet{} Computational Complexity\\}
-\normalfont{\textbullet{} Mining Software Engineering Data}
-\normalfont{\textbullet{} Software Reengineering\\}
-\normalfont{\textbullet{} Design recovery and Automated Evolution}
-\normalfont{\textbullet{} Semantics of Programming Languages}
 
 \section{Awards}
 
-\normalfont{ \textbullet{} Queen's University Excellence Scholarship, 2014\\}
-\normalfont{ \textbullet{} Dean's Scholar, 2015, 2016, 2017, 2018\\}
-\normalfont{ \textbullet{} Ho Ming Tai Memorial Scholarship, 2015, 2016, 2017, 2018\\}
-\normalfont{ \textbullet{} Teaching Assistant of the Year, 2017\\}
+\normalfont{ \textbullet{} Dean's Teaching Assistant Award, 2021\\}
 \normalfont{ \textbullet{} Students' Choice: The Best Engineering Capstone Project, 2018\\}
+\normalfont{ \textbullet{} Teaching Assistant of the Year, 2017\\}
+\normalfont{ \textbullet{} Ho Ming Tai Memorial Scholarship, 2015, 2016, 2017, 2018\\}
+\normalfont{ \textbullet{} Dean's Scholar, 2015, 2016, 2017, 2018\\}
+\normalfont{ \textbullet{} Queen's University Excellence Scholarship, 2014\\}
 
 %-------------------------------------------------------------------------------
 
-
 \end{resume}
-\(\)\end{document}
+\end{document}
